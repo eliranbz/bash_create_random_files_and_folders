@@ -1,14 +1,30 @@
 #!/bin/bash
+#mailer for event handling
+mailer() {
+echo $1 | mail -s "Script Error" eliranbz@gmail.com
+}
+
 #Check if the script is still running and if it does - exit with error
-if pidof -x "script.sh" >/dev/null; then
+#The reason it's ge => 3 and not 1 is because for some reason when script runs he create more processes and the shows 2 instead of 0.
+#if you run this command outside the script it shows 0
+
+running=`ps aux | grep -i "script.sh" | grep -v "grep" | wc -l`
+if [ $running -ge 3 ]
+then
     echo "Script is already running"
-        exit 2
+    mailer "Error! Script is already running!"
+    exit 2
 fi
 
 #Creating a folder to save the results
-mkdir results
-cd results
+if [ ! -d results ]; then
+	mkdir results
+else
+	mailer "Error! Folder Exists"
+fi
 
+cd results
+mailer()
 #Create 100 Random Folders using mktemp
 for i in {1..100}
 do
@@ -27,7 +43,7 @@ do
         for i in {1..100}
         do
 				
-            #Creating Random Filenames
+            #Creating Random File names
 			FILENAME=`mktemp -u XXXXXXX."${prefixes[$((RANDOM%num_prefixes))]}"`
 			#Creating Random File Size (50Kb to 200Kb)
 			FILESIZE=`expr $(((RANDOM%154+51)*1000)) + $((RANDOM%999+1))`
@@ -35,10 +51,9 @@ do
                         cat /dev/urandom |tr -dc A-Z-a-z-0-9-" " | head -c${1:-$FILESIZE} > $FILENAME
 			echo $FILENAME
 
-			#Removing Spaces From file content using a tmp file manipulation
+			#Removing Spaces
 			sed -r 's/\s+//g' $FILENAME > tmpfile
 			cat tmpfile > $FILENAME
-			
 			#Removing tmpfile for next use
 			rm -f tmpfile
 			
@@ -48,12 +63,3 @@ do
 		#Exit folder
         cd ..
 done
-
-mailer {
-sendmail eliranbz@gmail.com <<EOF
-subject: test
-from: Script@scriptland.com
-
-Something went wrong!
-EOF
-}
