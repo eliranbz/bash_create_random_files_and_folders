@@ -21,21 +21,24 @@ if [ ! -d results ]; then
 	mkdir results
 else
 	mailer "Error! Folder Exists"
+	echo "*** Folder exists, skipping"
 fi
 
 cd results
-mailer()
+
 #Create 100 Random Folders using mktemp
+echo "*** Starting To Create Random Folders"
 for i in {1..100}
 do
    mktemp -d XXXXXXX
 done
-
+echo "*** Random Folders has been Created Successfully"
 #Set prefixes in Array and count them
 prefixes=(a b c)
 num_prefixes=${#prefixes[*]}
 
 #Run for each folder
+echo "*** Starting To Create Random Files"
 for dir in *;
 do
         cd $dir
@@ -48,7 +51,7 @@ do
 			#Creating Random File Size (50Kb to 200Kb)
 			FILESIZE=`expr $(((RANDOM%154+51)*1000)) + $((RANDOM%999+1))`
 			#Adding random content to files using allowed chars
-                        cat /dev/urandom |tr -dc A-Z-a-z-0-9-" " | head -c${1:-$FILESIZE} > $FILENAME
+            cat /dev/urandom |tr -dc A-Z-a-z-0-9-" " | head -c${1:-$FILESIZE} > $FILENAME
 			echo $FILENAME
 
 			#Removing Spaces
@@ -61,5 +64,6 @@ do
 			md5sum $FILENAME > $FILENAME.md5
         done
 		#Exit folder
+		echo "*** Files Has Been Created For Current Folder, Changing Folder"
         cd ..
 done
